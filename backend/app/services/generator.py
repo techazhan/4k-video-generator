@@ -1,8 +1,7 @@
 import uuid
-import json
-import time
-import threading
+import cv2
 import numpy as np
+import threading
 from pathlib import Path
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
@@ -49,37 +48,13 @@ executor = ThreadPoolExecutor(max_workers=2)
 
 
 def frames_to_video(frames: np.ndarray, fps: int, output_path: Path):
-    """Write numpy frames to an MP4 video file using FFmpeg."""
-    import subprocess as sp
-
     num_frames, height, width, _ = frames.shape
-
-    cmd = [
-        "ffmpeg",
-        "-y",
-        "-f", "rawvideo",
-        "-vcodec", "rawvideo",
-        "-s", f"{width}x{height}",
-        "-pix_fmt", "rgb24",
-        "-r", str(fps),
-        "-i", "-",
-        "-c:v", "libx264",
-        "-preset", "veryslow",
-        "-crf", "18",
-        "-pix_fmt", "yuv420p",
-        "-profile:v", "high",
-        "-level", "5.1",
-        str(output_path),
-    ]
-
-    proc = sp.Popen(cmd, stdin=sp.PIPE, stderr=sp.PIPE)
-    proc.stdin.write(frames.tobytes())
-    proc.stdin.close()
-    proc.wait()
-
-    if proc.returncode != 0:
-        err = proc.stderr.read().decode()
-        raise RuntimeError(f"FFmpeg failed: {err}")
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    writer = cv2.VideoWriter(str(output_path), fourcc, fps, (width, height))
+    for i in range(num_frames):
+        bgr = cv2.cvtColor(frames[i], cv2.COLOR_RGB2BGR)
+        writer.write(bgr)
+    writer.release()
 
 
 def generate_video_task(job_id: str, req: GenerationRequest):
@@ -91,6 +66,7 @@ def generate_video_task(job_id: str, req: GenerationRequest):
         frames = model_instance.generate(
             prompt=req.prompt,
             negative_prompt=req.negative_prompt,
+            style=req.style or "cinematic",
             width=req.width,
             height=req.height,
             fps=req.fps,

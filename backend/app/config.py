@@ -8,16 +8,16 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
 
-    model_path: str = os.getenv("MODEL_PATH", "/app/models/your_model.pt")
-    model_device: str = os.getenv("MODEL_DEVICE", "cuda")
-    model_dtype: str = os.getenv("MODEL_DTYPE", "float16")
+    model_path: str = os.getenv("MODEL_PATH", "")
+    model_device: str = os.getenv("MODEL_DEVICE", "cpu")
+    model_dtype: str = os.getenv("MODEL_DTYPE", "float32")
 
-    output_dir: str = os.getenv("OUTPUT_DIR", "/app/outputs")
+    output_dir: str = os.getenv("OUTPUT_DIR", "C:\\Users\\Usmani Sir\\4k-video-generator\\outputs")
     max_video_duration: int = int(os.getenv("MAX_VIDEO_DURATION", "30"))
     max_resolution: str = os.getenv("MAX_RESOLUTION", "3840x2160")
     fps: int = int(os.getenv("FPS", "24"))
 
-    cloud_storage_enabled: bool = os.getenv("CLOUD_STORAGE_ENABLED", "true").lower() == "true"
+    cloud_storage_enabled: bool = os.getenv("CLOUD_STORAGE_ENABLED", "false").lower() == "true"
     s3_bucket: str = os.getenv("S3_BUCKET", "your-bucket-name")
     s3_region: str = os.getenv("S3_REGION", "us-east-1")
     s3_access_key: str = os.getenv("S3_ACCESS_KEY", "")
