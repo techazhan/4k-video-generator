@@ -1,11 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>4K Video Generator</title>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Video Forge</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#08080f;color:#e8e8ed;min-height:100vh;background-image:radial-gradient(ellipse at 20% 50%,rgba(102,126,234,0.03) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(118,75,162,0.03) 0%,transparent 60%)}
+.app{max-width:1360px;margin:0 auto;padding:1.5rem 2rem}
+.header{display:flex;flex-direction:column;align-items:center;padding:2rem 0 2.5rem;border-bottom:1px solid rgba(255,255,255,0.04);margin-bottom:2rem}
+.logo{display:flex;align-items:center;gap:.75rem}
+.logo-icon{font-size:2rem;color:#667eea;animation:pulse-glow 3s ease-in-out infinite}
+@keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 4px rgba(102,126,234,0.3))}50%{filter:drop-shadow(0 0 16px rgba(102,126,234,0.6))}}
+.header h1{font-size:2.2rem;font-weight:800;letter-spacing:-0.02em;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.subtitle{color:#666;margin-top:.5rem;font-size:1rem}
+.main{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start}
+@media(max-width:1024px){.main{grid-template-columns:1fr}}
+.panel{background:rgba(18,18,26,0.8);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:1.5rem}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.panel-header h2{font-size:1.1rem;font-weight:600;color:#ccc;letter-spacing:.02em}
+.field{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.2rem;flex:1}
+.field>span{font-size:.8rem;color:#999;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.field>span em{color:#a855f7;font-style:normal;font-weight:600}
+.field textarea,.field input,.field select{background:rgba(26,26,38,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:.75rem;color:#e8e8ed;font-size:.9rem;font-family:inherit;transition:all .2s;width:100%}
+.field textarea:focus,.field input:focus,.field select:focus{outline:none;border-color:rgba(102,126,234,0.5);box-shadow:0 0 0 3px rgba(102,126,234,0.1)}
+.field-row{display:flex;gap:1rem}
+@media(max-width:600px){.field-row{flex-direction:column;gap:0}}
+textarea{resize:vertical}
+.style-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.5rem}
+.style-card{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.7rem .5rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;cursor:pointer;transition:all .2s;color:#aaa;font-family:inherit;text-align:center;font-size:.8rem}
+.style-card:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:#ddd}
+.style-card.active{background:rgba(102,126,234,0.1);border-color:rgba(102,126,234,0.4);color:#fff;box-shadow:0 0 20px rgba(102,126,234,0.05)}
+.style-card .icon{font-size:1.3rem}
+.style-card .label{font-size:.75rem;font-weight:600}
+.style-card .desc{font-size:.6rem;color:#666}
+input[type="range"]{-webkit-appearance:none;appearance:none;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;outline:none;padding:0;border:none;cursor:pointer;width:100%}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#667eea,#a855f7);cursor:pointer;border:2px solid rgba(255,255,255,0.1)}
+.range-label{font-size:.75rem;color:#888;text-align:right;margin-top:-.3rem}
+.actions{margin-top:1.5rem;display:flex;gap:.75rem}
+.btn{padding:.8rem 1.5rem;border-radius:10px;border:none;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .25s;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;justify-content:center;font-family:inherit}
+.btn-primary{flex:1;background:linear-gradient(135deg,#667eea,#a855f7);color:#fff}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(102,126,234,0.3)}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-danger{flex:1;background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)}
+.btn-danger:hover{background:rgba(231,76,60,0.25)}
+.btn-download{flex:1;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)}
+.btn-download:hover{background:rgba(46,204,113,0.2)}
+.btn-secondary{background:rgba(255,255,255,0.04);color:#888;border:1px solid rgba(255,255,255,0.06)}
+.btn-secondary:hover{background:rgba(255,255,255,0.08);color:#ccc}
+.status-bar{padding:1rem;background:rgba(26,26,38,0.5);border-radius:12px;margin-bottom:1rem;border:1px solid rgba(255,255,255,0.04)}
+.status-label{display:flex;align-items:center;gap:.6rem;font-size:.9rem}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:#667eea;animation:pulse-dot 1s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.progress-bar{height:4px;background:rgba(255,255,255,0.05);border-radius:2px;margin-top:.8rem;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#667eea,#a855f7);border-radius:2px;transition:width .4s ease}
+.message{margin-top:.6rem;color:#2ecc71;font-size:.85rem}
+.error-bar{padding:1rem;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.15);border-radius:12px;display:flex;align-items:center;gap:.6rem;color:#e74c3c;font-size:.85rem;margin-bottom:1rem}
+.video-container{display:flex;flex-direction:column;gap:.75rem}
+.video-wrapper{border-radius:12px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,0.05)}
+.video-player{width:100%;display:block;max-height:70vh}
+.video-actions{display:flex;gap:.75rem}
+.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 2rem;text-align:center}
+.placeholder .icon{font-size:3.5rem;color:rgba(102,126,234,0.3);margin-bottom:1.5rem}
+.placeholder .title{font-size:1.1rem;font-weight:600;color:#aaa;margin-bottom:.5rem}
+.placeholder .text{color:#555;font-size:.85rem;max-width:280px;line-height:1.5}
+.placeholder .tips{margin-top:1.5rem;font-size:.8rem;color:#444}
+.history-section{margin-top:1.5rem;border-top:1px solid rgba(255,255,255,0.04);padding-top:1rem}
+.history-section h3{font-size:.85rem;color:#777;font-weight:500;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em}
+.history-list{display:flex;flex-direction:column;gap:.4rem}
+.history-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .6rem;background:rgba(255,255,255,0.02);border-radius:8px;font-size:.8rem}
+.history-item:hover{background:rgba(255,255,255,0.04)}
+.history-style-badge{font-size:.65rem;background:rgba(102,126,234,0.1);color:#667eea;padding:.15rem .4rem;border-radius:4px;font-weight:600;text-transform:uppercase;white-space:nowrap}
+.history-prompt{flex:1;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-time{color:#555;font-size:.7rem;white-space:nowrap}
+.history-play{background:none;border:none;color:#667eea;cursor:pointer;font-size:.85rem;padding:.2rem .4rem;border-radius:4px}
+.history-play:hover{background:rgba(102,126,234,0.1)}
+.loading-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.1);border-top-color:#a855f7;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="logo"><span class="logo-icon">✦</span><h1>AI Video Forge</h1></div>
+    <p class="subtitle">Generate cinematic 4K videos from text prompts</p>
+  </header>
+  <main class="main">
+    <section class="panel input-panel">
+      <div class="panel-header"><h2>Prompt Studio</h2></div>
+
+      <div class="field">
+        <span>Prompt <em>(required)</em></span>
+        <textarea id="prompt" rows="4" placeholder="Describe the video you want to generate..."></textarea>
+      </div>
+
+      <div class="field">
+        <span>Negative Prompt</span>
+        <textarea id="negPrompt" rows="2" placeholder="blurry, low quality, distorted, bad anatomy, ugly"></textarea>
+      </div>
+
+      <div class="field">
+        <span>Style <em>pick a mood</em></span>
+        <div class="style-grid" id="styleGrid"></div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <span>Resolution</span>
+          <select id="resolution">
+            <option value="3840x2160">4K UHD (3840x2160)</option>
+            <option value="1920x1080">1080p (1920x1080)</option>
+            <option value="1280x720">720p (1280x720)</option>
+            <option value="854x480">480p (854x480)</option>
+            <option value="640x360" selected>360p (640x360)</option>
+          </select>
+        </div>
+        <div class="field">
+          <span>FPS</span>
+          <select id="fps">
+            <option value="8">8 fps</option>
+            <option value="12">12 fps</option>
+            <option value="16">16 fps</option>
+            <option value="24" selected>24 fps</option>
+            <option value="30">30 fps</option>
+            <option value="48">48 fps</option>
+            <option value="60">60 fps</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <span>Duration: <span id="durationLabel">5s</span></span>
+          <input type="range" id="duration" min="1" max="30" value="5">
+        </div>
+        <div class="field">
+          <span>Steps: <span id="stepsLabel">50</span></span>
+          <input type="range" id="steps" min="10" max="150" step="5" value="50">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <span>Guidance: <span id="guidanceLabel">7.0</span></span>
+          <input type="range" id="guidance" min="1" max="30" step="0.5" value="7">
+        </div>
+        <div class="field">
+          <span>Seed</span>
+          <input type="text" id="seed" placeholder="random">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="generateBtn">▶ Generate Video</button>
+        <button class="btn btn-danger" id="cancelBtn" style="display:none">■ Cancel</button>
+      </div>
+    </section>
+
+    <section class="panel result-panel">
+      <div class="panel-header"><h2>Output</h2></div>
+      <div id="statusArea"></div>
+      <div id="resultArea">
+        <div class="placeholder">
+          <div class="icon">✦</div>
+          <div class="title">Ready to Create</div>
+          <div class="text">Write a prompt, choose a style, and generate your video</div>
+          <div class="tips">💡 Try: "cinematic aerial shot of a futuristic city"</div>
+        </div>
+      </div>
+      <div id="historySection" class="history-section" style="display:none">
+        <h3>Recent Generations</h3>
+        <div class="history-list" id="historyList"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const API = 'http://localhost:8001/api';
+
+const STYLES = [
+  {id:'cinematic',icon:'🎬',label:'Cinematic',desc:'Film grain, dramatic lighting'},
+  {id:'anime',icon:'🦊',label:'Anime',desc:'Cel-shaded, vibrant colors'},
+  {id:'realistic',icon:'📷',label:'Realistic',desc:'Photorealistic, natural'},
+  {id:'3d-render',icon:'🧊',label:'3D Render',desc:'Ray traced, hyperreal'},
+  {id:'pixel-art',icon:'🕹️',label:'Pixel Art',desc:'8-bit retro aesthetic'},
+  {id:'cyberpunk',icon:'🌃',label:'Cyberpunk',desc:'Neon, rain, dystopian'},
+  {id:'vintage-film',icon:'🎞️',label:'Vintage Film',desc:'16mm grain, warm'},
+  {id:'fantasy',icon:'🧙',label:'Fantasy',desc:'Ethereal, magical glow'},
+  {id:'horror',icon:'👻',label:'Horror',desc:'Dark, eerie, unsettling'},
+  {id:'documentary',icon:'🌍',label:'Documentary',desc:'Natural, raw'},
+];
+
+let selectedStyle = 'cinematic';
+let isGenerating = false;
+let pollTimer = null;
+let history = [];
+let jobId = null;
+
+const $ = id => document.getElementById(id);
+
+STYLES.forEach(s => {
+  const btn = document.createElement('button');
+  btn.className = 'style-card' + (s.id === selectedStyle ? ' active' : '');
+  btn.dataset.style = s.id;
+  btn.innerHTML = `<span class="icon">${s.icon}</span><span class="label">${s.label}</span><span class="desc">${s.desc}</span>`;
+  btn.onclick = () => {
+    document.querySelectorAll('.style-card').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    selectedStyle = s.id;
+  };
+  $('styleGrid').appendChild(btn);
+});
+
+['duration','steps','guidance'].forEach(id => {
+  const el = $(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    const label = $(id + 'Label');
+    if (label) label.textContent = id === 'guidance' ? parseFloat(el.value).toFixed(1) : el.value + (id === 'duration' ? 's' : '');
+  });
+});
+
+$('cancelBtn').onclick = () => {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  isGenerating = false;
+  $('generateBtn').style.display = '';
+  $('cancelBtn').style.display = 'none';
+  $('statusArea').innerHTML = '';
+};
+
+$('generateBtn').onclick = async () => {
+  const prompt = $('prompt').value.trim();
+  if (!prompt) { $('prompt').focus(); return; }
+
+  const [w, h] = $('resolution').value.split('x').map(Number);
+  const seedStr = $('seed').value.trim();
+
+  isGenerating = true;
+  $('generateBtn').style.display = 'none';
+  $('cancelBtn').style.display = '';
+  $('statusArea').innerHTML = '<div class="status-bar"><div class="status-label"><span class="status-dot"></span> Submitting...</div></div>';
+  $('resultArea').innerHTML = '';
+
+  try {
+    const res = await fetch(API + '/generate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        prompt,
+        negative_prompt: $('negPrompt').value,
+        style: selectedStyle,
+        width: w, height: h,
+        fps: parseInt($('fps').value),
+        duration: parseInt($('duration').value),
+        guidance_scale: parseFloat($('guidance').value),
+        num_inference_steps: parseInt($('steps').value),
+        seed: seedStr ? parseInt(seedStr) : null,
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Request failed');
+
+    jobId = data.job_id;
+    $('statusArea').innerHTML = `<div class="status-bar"><div class="status-label"><span class="status-dot"></span> ${data.message}</div></div>`;
+
+    pollTimer = setInterval(async () => {
+      try {
+        const sr = await fetch(API + '/status/' + jobId);
+        const job = await sr.json();
+
+        let statusHtml = `<div class="status-bar"><div class="status-label"><span class="status-dot"></span> <strong>${job.status.charAt(0).toUpperCase()+job.status.slice(1)}</strong></div>`;
+        if (['generating','encoding','uploading'].includes(job.status)) {
+          statusHtml += `<div class="progress-bar"><div class="progress-fill" style="width:${Math.max(job.progress*100,5)}%"></div></div>`;
+        }
+        statusHtml += '</div>';
+        $('statusArea').innerHTML = statusHtml;
+
+        if (job.status === 'completed') {
+          clearInterval(pollTimer); pollTimer = null;
+          isGenerating = false;
+          $('generateBtn').style.display = '';
+          $('cancelBtn').style.display = 'none';
+          const videoUrl = job.video_url.startsWith('http') ? job.video_url : API + '/../..' + job.video_url;
+          const fullUrl = job.video_url.startsWith('http') ? job.video_url : 'http://localhost:8001' + job.video_url;
+          $('statusArea').innerHTML = `<div class="status-bar"><div class="status-label" style="color:#2ecc71">✓ Generated</div></div>`;
+          $('resultArea').innerHTML = `
+            <div class="video-container">
+              <div class="video-wrapper"><video controls autoplay class="video-player"><source src="${fullUrl}" type="video/mp4"></video></div>
+              <div class="video-actions">
+                <a href="${fullUrl}" download class="btn btn-download">↓ Download MP4</a>
+                <button class="btn btn-secondary" onclick="clearVideo()">✕ Clear</button>
+              </div>
+            </div>`;
+          history.unshift({id:jobId, prompt:prompt.slice(0,80), style:selectedStyle, videoUrl:fullUrl, time:new Date().toLocaleTimeString()});
+          renderHistory();
+        } else if (job.status === 'failed') {
+          clearInterval(pollTimer); pollTimer = null;
+          isGenerating = false;
+          $('generateBtn').style.display = '';
+          $('cancelBtn').style.display = 'none';
+          $('statusArea').innerHTML = `<div class="error-bar">⚠ ${job.error || 'Generation failed'}</div>`;
+        }
+      } catch(e) {
+        clearInterval(pollTimer); pollTimer = null;
+        isGenerating = false;
+        $('generateBtn').style.display = '';
+        $('cancelBtn').style.display = 'none';
+        $('statusArea').innerHTML = `<div class="error-bar">⚠ Connection lost</div>`;
+      }
+    }, 1500);
+  } catch(e) {
+    isGenerating = false;
+    $('generateBtn').style.display = '';
+    $('cancelBtn').style.display = 'none';
+    $('statusArea').innerHTML = `<div class="error-bar">⚠ ${e.message}</div>`;
+  }
+};
+
+function clearVideo() {
+  $('resultArea').innerHTML = '<div class="placeholder"><div class="icon">✦</div><div class="title">Ready to Create</div><div class="text">Write a prompt, choose a style, and generate your video</div></div>';
+  $('statusArea').innerHTML = '';
+}
+
+function renderHistory() {
+  if (history.length === 0) { $('historySection').style.display = 'none'; return; }
+  $('historySection').style.display = '';
+  $('historyList').innerHTML = history.map(h => `
+    <div class="history-item">
+      <span class="history-style-badge">${h.style}</span>
+      <span class="history-prompt">"${h.prompt}"</span>
+      <span class="history-time">${h.time}</span>
+      <button class="history-play" onclick="playHistory('${h.videoUrl}')">▶</button>
+    </div>`).join('');
+}
+
+function playHistory(url) {
+  $('resultArea').innerHTML = `
+    <div class="video-container">
+      <div class="video-wrapper"><video controls autoplay class="video-player"><source src="${url}" type="video/mp4"></video></div>
+      <div class="video-actions"><a href="${url}" download class="btn btn-download">↓ Download MP4</a><button class="btn btn-secondary" onclick="clearVideo()">✕ Clear</button></div>
+    </div>`;
+  $('statusArea').innerHTML = '';
+}
+</script>
+</body>
 </html>
