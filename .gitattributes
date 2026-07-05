@@ -1,0 +1,18 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Python
+*.py text diff=python
+
+# Markdown
+*.md text
+
+# JSON
+*.json text
+
+# YAML
+*.yml text
+*.yaml text
+
+# Lock files - treat as binary to avoid merge conflicts
+package-lock.json binary
